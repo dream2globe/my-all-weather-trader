@@ -81,9 +81,9 @@ class BacktestEngine:
             if target_qty == 0:
                 continue
                 
-            # 시가(Open)를 체결가로 활용. 슬리피지(Slippage) 페널티 부여
+            # 종가(Close)를 체결가로 활용. 슬리피지(Slippage) 페널티 부여
             # 매수면 비싸게(+), 매도면 싸게(-) 체결되는 불리한 조건
-            raw_price = self.data[ticker].loc[execution_time, 'Open']
+            raw_price = self.data[ticker].loc[execution_time, 'Close']
             if np.isnan(raw_price) or raw_price <= 0:
                 continue # 거래 정지 또는 상장 전
                 
