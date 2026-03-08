@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.python-version
+
+# Data and Reports (Exclude by default)
+data/
+reports/*.csv
+reports/*.png
+reports/*.txt
+reports/*.md
+!reports/README.md
+
+# Project specific
+.pytest_cache/
+.DS_Store
+.env
+uv.lock

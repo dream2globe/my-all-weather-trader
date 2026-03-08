@@ -1,0 +1,16 @@
+[project]
+name = "my-all-weather-trender"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.2",
+    "pandas>=3.0.1",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.13.1",
+    "pyupbit>=0.2.34",
+    "seaborn>=0.13.2",
+    "yfinance>=1.2.0",
+]
