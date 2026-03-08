@@ -76,8 +76,8 @@ def plot_asset_allocation(result_df: pd.DataFrame, save_path: str = None):
         plt.show()
     plt.close()
 
-def generate_tear_sheet(result_df: pd.DataFrame, save_path: str = None):
-    """핵심 성과 지표(Metrics) 요약 텍스트 출력"""
+def generate_tear_sheet(result_df: pd.DataFrame, trades_df: pd.DataFrame = None, save_path: str = None):
+    """핵심 성과 지표(Metrics) 및 자산별 누적 수익률 요약 텍스트 출력"""
     metrics = calculate_performance_metrics(result_df)
     
     report = "=" * 40 + "\n"
@@ -90,6 +90,38 @@ def generate_tear_sheet(result_df: pd.DataFrame, save_path: str = None):
         else:
             report += f"{k:<20}: {v:8.2f}\n"
             
+    # 자산별 수익률 계산 (trades_df 가 있을 경우)
+    if trades_df is not None and not trades_df.empty:
+        report += "-" * 40 + "\n"
+        report += " 📈 자산별 단순 수익률 (Total Return by Asset)\n"
+        report += "-" * 40 + "\n"
+        
+        tickers = trades_df['Ticker'].unique()
+        for ticker in tickers:
+            ticker_trades = trades_df[trades_df['Ticker'] == ticker]
+            
+            # 총 매수 금액 (투입 원금)
+            buys = ticker_trades[ticker_trades['Action'] == 'BUY']
+            total_invested = buys['Value'].sum() + buys['Commission'].sum()
+            
+            # 총 매도 금액 (회수 금액)
+            sells = ticker_trades[ticker_trades['Action'] == 'SELL']
+            total_recovered = sells['Value'].sum() - sells['Commission'].sum()
+            
+            # 현재 평가 금액 (마지막 날 기준)
+            col_name = f"{ticker}_val" if f"{ticker}_val" in result_df.columns else f"{ticker.replace('.KS', '')}_val"
+            if col_name in result_df.columns:
+                current_value = result_df[col_name].iloc[-1]
+            else:
+                current_value = 0.0
+                
+            # 수익률 계산: (현재평가금액 + 누적회수금액) / 누적투입금액 - 1
+            if total_invested > 0:
+                asset_return = (current_value + total_recovered) / total_invested - 1.0
+                report += f"{ticker:<20}: {asset_return*100:8.2f} %\n"
+            else:
+                report += f"{ticker:<20}:      N/A (매수 내역 없음)\n"
+
     report += "=" * 40 + "\n"
     
     print(report)
@@ -164,6 +196,28 @@ def generate_markdown_report(result_df: pd.DataFrame, trades_df: pd.DataFrame, s
         else:
             report += f"| {k} | {v:.2f} |\n"
             
+    if trades_df is not None and not trades_df.empty:
+        report += "\n### 자산별 단순 수익률 (Total Return by Asset)\n\n"
+        report += "| 자산 | 수익률 |\n"
+        report += "|:---|---:|\n"
+        
+        tickers = trades_df['Ticker'].unique()
+        for ticker in tickers:
+            ticker_trades = trades_df[trades_df['Ticker'] == ticker]
+            buys = ticker_trades[ticker_trades['Action'] == 'BUY']
+            total_invested = buys['Value'].sum() + buys['Commission'].sum()
+            sells = ticker_trades[ticker_trades['Action'] == 'SELL']
+            total_recovered = sells['Value'].sum() - sells['Commission'].sum()
+            
+            col_name = f"{ticker}_val" if f"{ticker}_val" in result_df.columns else f"{ticker.replace('.KS', '')}_val"
+            current_value = result_df[col_name].iloc[-1] if col_name in result_df.columns else 0.0
+                
+            if total_invested > 0:
+                asset_return = (current_value + total_recovered) / total_invested - 1.0
+                report += f"| **{ticker}** | **{asset_return*100:.2f}%** |\n"
+            else:
+                report += f"| **{ticker}** | N/A |\n"
+
     report += "\n---\n\n"
     report += "## 2. 현재 자산 배분 비중 (Current Allocation)\n\n"
     

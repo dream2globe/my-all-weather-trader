@@ -133,7 +133,7 @@ def run_pipeline():
     timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
     
     # 티어시트 텍스트
-    generate_tear_sheet(result_history, save_path=f"{reports_dir}/tear_sheet_{timestamp}.txt")
+    generate_tear_sheet(result_history, trades_df, save_path=f"{reports_dir}/tear_sheet_{timestamp}.txt")
     
     # 시각화 이미지
     plot_portfolio_growth(result_history, save_path=f"{reports_dir}/growth_{timestamp}.png")
