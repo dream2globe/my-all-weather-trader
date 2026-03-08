@@ -89,8 +89,10 @@ class BacktestEngine:
                 
             execution_price = raw_price * (1 + config.slippage_rate) if target_qty > 0 else raw_price * (1 - config.slippage_rate)
             
-            # 1차. 수량 소수점(Fractional) 제약 검증
-            allowed_fractional = ticker.startswith("KRW-") # 코인만 소수점 매매 허용
+            # 1.차 수량 소수점(Fractional) 제약 검증
+            # 코인 또는 가상자산 티커(BTC, ETH)에 대해 소수점 매매 허용
+            is_crypto = ticker.startswith("KRW-") or ticker in ['BTC', 'ETH']
+            allowed_fractional = is_crypto
             if not allowed_fractional:
                 # 주식/ETF는 정수(1주 단위) 단위로 내림(매수) 또는 올림(매도)
                 # 매수(양수): 3.8주 -> 3주. 매도(음수): -3.8주 -> -3주
@@ -100,7 +102,7 @@ class BacktestEngine:
                     
             # 2차. 현금 및 자산 보유량(Short 금지) 검증
             trade_value = target_qty * execution_price
-            commission_rate = config.crypto_commission_rate if allowed_fractional else config.stock_commission_rate
+            commission_rate = config.crypto_commission_rate if is_crypto else config.stock_commission_rate
             commission = abs(trade_value) * commission_rate
             
             if target_qty > 0: # 매수
@@ -120,6 +122,13 @@ class BacktestEngine:
                     total_cost = trade_value + commission
 
                 # 체결 반영
+                if total_cost > self.status['cash']:
+                    # 최종 안전장치: 정말 소액 차이라면 소지 현금 전액 사용
+                    total_cost = self.status['cash']
+                    trade_value = total_cost / (1 + commission_rate)
+                    commission = total_cost - trade_value
+                    target_qty = trade_value / execution_price
+
                 self.status['cash'] -= total_cost
                 old_qty = self.status['holdings'][ticker]
                 old_avg = self.status['avg_prices'][ticker]

@@ -16,7 +16,12 @@ def fetch_yfinance_hourly(ticker: str, days_back: int = 720) -> pd.DataFrame:
     logger.info(f"Fetching {ticker} data from yfinance...")
     try:
         # yfinance의 1h 데이터 제한 기간 처리
-        start_date = datetime.now() - timedelta(days=min(days_back, 729) if config.use_hourly_data else 2000)
+        # - 1시간봉: 최대 729일(yfinance API 제한)
+        # - 일봉: config.start_date 를 직접 시작점으로 사용 (장기 백테스트 기간 완전 확보)
+        if config.use_hourly_data:
+            start_date = datetime.now() - timedelta(days=min(days_back, 729))
+        else:
+            start_date = datetime.strptime(config.start_date, '%Y-%m-%d')
         
         df = yf.download(
             tickers=ticker,

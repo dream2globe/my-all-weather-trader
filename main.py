@@ -15,6 +15,7 @@ from visualization.plot_utils import plot_portfolio_growth, plot_drawdown, plot_
 logger = setup_logger("main")
 
 def run_pipeline():
+    config.start_date = "2024-01-01"  # 비트코인/이더리움 실전 투자 시점인 2024년으로 시작일 조정
     logger.info("Starting Dynamic Portfolio Backtest Pipeline...")
     
     # 1. 포트폴리오 자산 유니버스 (티커) 정의
@@ -94,25 +95,28 @@ def run_pipeline():
     va_shv.precalculate_targets(synced_data['SHV'])
     strategies.append(va_shv)
     
-    # 3.5. BTC MDD 역피라미드 + 변동성 타겟팅 제어 (기존 10% -> 5% 축소)
-    inv_pyramid_btc = VolatilityTargetingInversePyramid(
-        name="Vol_Target_Inv_Pyramid_BTC",
+    # 3.5. BTC 변동성 타겟팅 역피라미드 (5%)
+    # MDD -10%, -25%, -40% 3단계 트리거 / ATR 급등 시 보유량 50% 강제 현금화 + 3일 쿨다운
+    # invest_ratios: 각 트리거당 초기자본의 1.67% 투입 (BTC 배분액 5%를 3개 레벨에 균등 분할)
+    vt_btc = VolatilityTargetingInversePyramid(
+        name="VT_BTC",
         ticker='BTC',
-        mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2],
-        invest_ratios=[0.025, 0.05], # 5% 한도로 절반 축소 (기존 0.05, 0.10)
+        mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2, -0.40],
+        invest_ratios=[0.0167, 0.0167, 0.0166],
         vol_target=config.btc_volatility_target
     )
-    strategies.append(inv_pyramid_btc)
+    strategies.append(vt_btc)
     
-    # 3.6. ETH MDD 역피라미드 + 변동성 타겟팅 제어 (신규 5% 편성)
-    inv_pyramid_eth = VolatilityTargetingInversePyramid(
-        name="Vol_Target_Inv_Pyramid_ETH",
+    # 3.6. ETH 변동성 타겟팅 역피라미드 (5%)
+    # invest_ratios: 각 트리거당 초기자본의 1.67% 투입 (ETH 배분액 5%를 3개 레벨에 균등 분할)
+    vt_eth = VolatilityTargetingInversePyramid(
+        name="VT_ETH",
         ticker='ETH',
-        mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2], # BTC와 동일한 폭락 기준 적용
-        invest_ratios=[0.025, 0.05], # 5% 한도
+        mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2, -0.40],
+        invest_ratios=[0.0167, 0.0167, 0.0166],
         vol_target=config.eth_volatility_target
     )
-    strategies.append(inv_pyramid_eth)
+    strategies.append(vt_eth)
 
     # 4. 백테스트 엔진 구동
     engine = BacktestEngine(synced_data, strategies, logger)

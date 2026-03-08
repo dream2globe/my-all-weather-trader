@@ -153,22 +153,35 @@ class VolatilityTargetingInversePyramid(BaseStrategy):
             
             # 위험 발동: 현재 변동성이 목표치(vol_target) 초과
             if current_atr > self.vol_target:
-                current_holdings = portfolio_status['holdings'].get(self.ticker, 0.0)
-                if current_holdings > 0:
-                    # 보유량 절반(50%)을 즉시 투매하여 리스크 헤지
-                    sell_qty = - (current_holdings * 0.5)
-                    # 3일간 쿨다운: 투매 직후 칼날잡기를 막기 위해 강제 휴식 부여
-                    self.cooldown_until = current_time + pd.Timedelta(days=3)
-                    self.purchased_levels.clear() # 하락사이클 초기화
-                    return {self.ticker: sell_qty}
+                # 하락 추세 확인: 현재가가 3개 봉 전보다 낮을 때만 방패 발동 (불장 노이즈 매도 방지)
+                is_downside = True
+                if len(target_df) >= 3:
+                    is_downside = target_df['Close'].iloc[-1] < target_df['Close'].iloc[-3]
+
+                if is_downside:
+                    current_holdings = portfolio_status['holdings'].get(self.ticker, 0.0)
+                    if current_holdings > 0:
+                        # 보유량 절반(50%)을 즉시 투매하여 리스크 헤지
+                        sell_qty = - (current_holdings * 0.5)
+                        # 3일간 쿨다운: 적극적인 폭락 대비를 위해 3일 간격 방패 활용
+                        self.cooldown_until = current_time + pd.Timedelta(days=3)
+                        self.purchased_levels.clear() # 하락사이클 초기화
+                        return {self.ticker: sell_qty}
         
         # 3. 역피라미드 (Inverse Pyramid) 물타기 로직 (창)
         current_mdd = calculate_rolling_mdd(target_df, window=window_size).iloc[-1]
         
-        # 시세가 전고점을 회복(MDD 0 근접) 시 물타기 사이클 완전 종료
+        # 시세가 전고점을 회복(MDD 0 근접) 시 익절 및 물타기 사이클 완전 종료
         if current_mdd >= -0.01:
+            signal_qty = 0.0
+            # 하락장에서 물을 타서 보유 수량이 있다면 절반(50%) 익절 (Take Profit)
+            if len(self.purchased_levels) > 0:
+                current_holdings = portfolio_status['holdings'].get(self.ticker, 0.0)
+                if current_holdings > 0:
+                    signal_qty = -(current_holdings * 0.5)
+            
             self.purchased_levels.clear()
-            return {self.ticker: 0.0}
+            return {self.ticker: signal_qty} if signal_qty < 0 else {self.ticker: 0.0}
             
         signal_qty = 0.0
         current_price = data.loc[current_time, 'Close']
