@@ -180,9 +180,11 @@ def plot_trading_signals(synced_data: dict, trades_df: pd.DataFrame, save_path: 
     else:
         plt.show()
     plt.close()
-def generate_markdown_report(result_df: pd.DataFrame, trades_df: pd.DataFrame, save_path: str = None):
+def generate_markdown_report(result_df: pd.DataFrame, trades_df: pd.DataFrame, save_path: str = None, timestamp: str = ""):
     """실전 매매용 주간 운용 계획서 (Markdown) 생성"""
     metrics = calculate_performance_metrics(result_df)
+    
+    img_suffix = f"_{timestamp}" if timestamp else ""
     
     report = f"# 📈 주간 포트폴리오 운용 리포트\n\n"
     report += f"> **작성일**: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}\n\n"
@@ -250,9 +252,9 @@ def generate_markdown_report(result_df: pd.DataFrame, trades_df: pd.DataFrame, s
         
     report += "\n---\n\n"
     report += "## 4. 시각화 자료\n\n"
-    report += "![Portfolio Growth](./growth.png)\n"
-    report += "![Drawdown](./mdd.png)\n"
-    report += "![Asset Allocation](./allocation.png)\n"
+    report += f"![Portfolio Growth](./growth{img_suffix}.png)\n"
+    report += f"![Drawdown](./mdd{img_suffix}.png)\n"
+    report += f"![Asset Allocation](./allocation{img_suffix}.png)\n"
     
     if save_path:
         with open(save_path, 'w', encoding='utf-8') as f:

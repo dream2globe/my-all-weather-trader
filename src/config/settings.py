@@ -7,13 +7,14 @@ class BacktestSettings(BaseSettings):
     initial_investment: float = Field(300_000_000.0, description="초기 자본금(예: 3억 원)")
     
     # 전략별 자산 비중 (연금 30% 안전자산 룰)
-    weight_sp500: float = Field(0.25, description="S&P 500 ETF (가치평균법, 25%)")
-    weight_kospi: float = Field(0.25, description="KOSPI 200 (가치평균법, 25%)")
+    weight_sp500: float = Field(0.30, description="S&P 500 ETF (가치평균법, 30%)")
+    weight_kospi: float = Field(0.30, description="KOSPI 200 (가치평균법, 30%)")
     weight_gld: float = Field(0.15, description="금 ETF (가치평균법, 15%)")
     weight_shv: float = Field(0.15, description="미국 단기채 ETF (가치평균법, 안전자산 15%)")
-    weight_btc: float = Field(0.05, description="BTC (변동성 기반 역피라미드 매수, 5%)")
-    weight_eth: float = Field(0.05, description="ETH (변동성 기반 역피라미드 매수, 5%)")
+    weight_btc: float = Field(0.00, description="BTC (비활성, 0%)")
+    weight_eth: float = Field(0.00, description="ETH (비활성, 0%)")
     cash_buffer_weight: float = Field(0.10, description="대기 현금 (현금성 안전자산 10%)")
+
 
     # 가치평균법(VA) 파라미터 (자산별 타겟 경로) — Grid Search 실증 최적값
     va_growth_rate_sp500: float = Field(0.006, description="SPY 월별 목표 복리 성장률 (0.6% -> 실측 CAGR 8.8%)")
@@ -22,7 +23,7 @@ class BacktestSettings(BaseSettings):
     va_growth_rate_shv: float = Field(0.0005, description="SHV 월별 목표 복리 성장률 (0.05% -> 현금성 단기채 보수적 목표)")
     va_growth_rate_btc: float = Field(0.012, description="BTC 월별 목표 복리 성장률 (1.2% -> 코인의 높은 변동성 고려)")
     va_growth_rate_eth: float = Field(0.015, description="ETH 월별 목표 복리 성장률 (1.5% -> 이더리움의 높은 성장세 반영)")
-    va_max_purchase_cap: float = Field(0.05, description="가치평균법 1회 최대 매수 허용치(해당 자산 배분액 대비 비율, 예: 5%)")
+    va_max_purchase_cap: float = Field(0.03, description="가치평균법 1회 최대 매수 허용치(해당 자산 배분액 대비 비율, 지정학 리스크로 3% 하향)")
     tolerance_band_kospi: float = Field(0.05, description="KOSPI 초과 상승 시 곧바로 매도하지 않는 상단 허용 오차 한도 (+5% 이내면 관망)")
 
     # 역피라미드 매매 & 변동성 타겟팅 기준 (BTC 전용)

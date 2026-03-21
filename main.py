@@ -95,28 +95,25 @@ def run_pipeline():
     va_shv.precalculate_targets(synced_data['SHV'])
     strategies.append(va_shv)
     
-    # 3.5. BTC 변동성 타겟팅 역피라미드 (5%)
-    # MDD -10%, -25%, -40% 3단계 트리거 / ATR 급등 시 보유량 50% 강제 현금화 + 3일 쿨다운
-    # invest_ratios: 각 트리거당 초기자본의 1.67% 투입 (BTC 배분액 5%를 3개 레벨에 균등 분할)
-    vt_btc = VolatilityTargetingInversePyramid(
-        name="VT_BTC",
-        ticker='BTC',
-        mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2, -0.40],
-        invest_ratios=[0.0167, 0.0167, 0.0166],
-        vol_target=config.btc_volatility_target
-    )
-    strategies.append(vt_btc)
+    # 3.5. BTC 변동성 타겟팅 역피라미드 (비활성)
+    # vt_btc = VolatilityTargetingInversePyramid(
+    #     name="VT_BTC",
+    #     ticker='BTC',
+    #     mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2, -0.40],
+    #     invest_ratios=[0.0167, 0.0167, 0.0166],
+    #     vol_target=config.btc_volatility_target
+    # )
+    # strategies.append(vt_btc)
     
-    # 3.6. ETH 변동성 타겟팅 역피라미드 (5%)
-    # invest_ratios: 각 트리거당 초기자본의 1.67% 투입 (ETH 배분액 5%를 3개 레벨에 균등 분할)
-    vt_eth = VolatilityTargetingInversePyramid(
-        name="VT_ETH",
-        ticker='ETH',
-        mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2, -0.40],
-        invest_ratios=[0.0167, 0.0167, 0.0166],
-        vol_target=config.eth_volatility_target
-    )
-    strategies.append(vt_eth)
+    # 3.6. ETH 변동성 타겟팅 역피라미드 (비활성)
+    # vt_eth = VolatilityTargetingInversePyramid(
+    #     name="VT_ETH",
+    #     ticker='ETH',
+    #     mdd_levels=[config.mdd_trigger_level_1, config.mdd_trigger_level_2, -0.40],
+    #     invest_ratios=[0.0167, 0.0167, 0.0166],
+    #     vol_target=config.eth_volatility_target
+    # )
+    # strategies.append(vt_eth)
 
     # 4. 백테스트 엔진 구동
     engine = BacktestEngine(synced_data, strategies, logger)
@@ -147,7 +144,7 @@ def run_pipeline():
         logger.info(f"거래 타점 플롯 생성이 완료되었습니다.")
         
     # 🌟 추가: Markdown 종합 리포트 생성
-    generate_markdown_report(result_history, trades_df, save_path=f"{reports_dir}/weekly_trade_plan_{timestamp}.md")
+    generate_markdown_report(result_history, trades_df, save_path=f"{reports_dir}/weekly_trade_plan_{timestamp}.md", timestamp=timestamp)
     logger.info(f"주간 운용 계획서(MD) 생성이 완료되었습니다.")
     
     # 히스토리 CSV 덤프
