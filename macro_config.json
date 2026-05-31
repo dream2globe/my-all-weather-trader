@@ -1,0 +1,34 @@
+{
+  "NASDAQ100": {
+    "override_ratio": 1.0,
+    "override_msg": "빅테크 방어력 신뢰: 100% 정상 편입"
+  },
+  "KOSPI": {
+    "override_ratio": 1.0,
+    "override_msg": "정상 편입"
+  },
+  "VEA": {
+    "override_ratio": 1.0,
+    "override_msg": "선진국 글로벌 랠리 100% 정상 편입"
+  },
+  "AI_INFRA": {
+    "override_ratio": 1.0,
+    "override_msg": "물리적 AI 인프라 수혜: 100% 정상 편입"
+  },
+  "COPPER": {
+    "override_ratio": 1.0,
+    "override_msg": "구조적 인플레이션 헷지 및 인프라 원자재: 100% 정상 편입"
+  },
+  "TLT": {
+    "override_ratio": 1.0,
+    "override_msg": "비중 축소(5%) 반영 완료: 100% 정상 편입"
+  },
+  "GLD": {
+    "override_ratio": 1.0,
+    "override_msg": "안전자산 및 인플레 헷지: 100% 정상 편입"
+  },
+  "SHV": {
+    "override_ratio": 1.0,
+    "override_msg": "잔여 현금 100% 달러 파킹"
+  }
+}
